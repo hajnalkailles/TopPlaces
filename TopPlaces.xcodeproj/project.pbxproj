@@ -58,8 +58,6 @@
 		AADF4C341C285196000E3CDF /* TopPlaces */ = {
 			isa = PBXGroup;
 			children = (
-				AADF4C381C285196000E3CDF /* AppDelegate.h */,
-				AADF4C391C285196000E3CDF /* AppDelegate.m */,
 				AADF4C3B1C285196000E3CDF /* ViewController.h */,
 				AADF4C3C1C285196000E3CDF /* ViewController.m */,
 				AADF4C3E1C285196000E3CDF /* Main.storyboard */,
@@ -74,6 +72,8 @@
 		AADF4C351C285196000E3CDF /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				AADF4C381C285196000E3CDF /* AppDelegate.h */,
+				AADF4C391C285196000E3CDF /* AppDelegate.m */,
 				AADF4C361C285196000E3CDF /* main.m */,
 			);
 			name = "Supporting Files";
@@ -267,6 +267,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = edu.misys.hajhegyi.TopPlaces;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -278,6 +279,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = edu.misys.hajhegyi.TopPlaces;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
