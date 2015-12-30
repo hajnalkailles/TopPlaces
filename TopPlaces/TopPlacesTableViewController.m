@@ -62,7 +62,6 @@
     {
         [placeIdForPlaceName setObject:[placeIds objectAtIndex:index] forKey:placeName];
         index++;
-        //NSLog(@"%@", placeName);
     }
     self.placesNameForId = placeIdForPlaceName;
     
@@ -176,8 +175,6 @@
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
         UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
         NSString *placeName = [NSString stringWithFormat: @"%@, %@, %@", cell.textLabel.text, cell.detailTextLabel.text, [self.countryList objectAtIndex:indexPath.section]];
-        
-        //NSLog(@"%@", placeName);
         
         placesPhotoController.placesId = [self.placesNameForId valueForKey:placeName];
     }

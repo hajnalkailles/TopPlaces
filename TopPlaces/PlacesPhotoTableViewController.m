@@ -136,7 +136,6 @@
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
         UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
         ivc.imageURL = [FlickrFetcher URLforPhoto:[self.photoList objectAtIndex: indexPath.row] format:FlickrPhotoFormatOriginal];
-        //NSLog(@"%@", ivc.imageURL);
         ivc.title = cell.textLabel.text;
     }
 }
