@@ -7,49 +7,89 @@
 //
 
 #import "PlacesPhotoTableViewController.h"
+#import "ImageViewController.h"
+#import "FlickrFetcher.h"
 
 @interface PlacesPhotoTableViewController ()
+
+@property (nonatomic, strong) NSArray *photoList;
 
 @end
 
 @implementation PlacesPhotoTableViewController
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    
-    // Uncomment the following line to preserve selection between presentations.
-    // self.clearsSelectionOnViewWillAppear = NO;
-    
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
+- (NSArray *) photoList
+{
+    if (!_photoList)
+    {
+        _photoList = [[NSArray alloc] init];
+    }
+    return _photoList;
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self fetchPhotosInPlaces];
+}
+
+- (void) fetchPhotosInPlaces {
+    //NSLog(@"%@", self.placesId);
+    
+    NSURL *url = [FlickrFetcher URLforPhotosInPlace:self.placesId maxResults:50];
+    NSData *jsonResults = [NSData dataWithContentsOfURL: url];
+    NSDictionary *photosInPlace = [NSJSONSerialization JSONObjectWithData:jsonResults
+                                                                  options:0
+                                                                    error:NULL];
+    
+    NSMutableArray *photos = [photosInPlace valueForKeyPath:@"photos.photo"];
+    NSMutableArray *photosToKeep = [[NSMutableArray alloc] init];
+    for (id photo in photos)
+    {
+        NSURL *photoUrl = [FlickrFetcher URLforPhoto:photo format:FlickrPhotoFormatOriginal];
+        if (photoUrl)
+        {
+            [photosToKeep addObject:photo];
+        }
+    }
+    
+    self.photoList = photosToKeep;
 }
 
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-#warning Incomplete implementation, return the number of sections
-    return 0;
+    return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-#warning Incomplete implementation, return the number of rows
-    return 0;
+    return [self.photoList count];
 }
 
-/*
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:<#@"reuseIdentifier"#> forIndexPath:indexPath];
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"photoDescription" forIndexPath:indexPath];
     
-    // Configure the cell...
+    NSString *photoTitle = [[self.photoList objectAtIndex:indexPath.row] valueForKey: FLICKR_PHOTO_TITLE];
+    id photoDescription = [[self.photoList objectAtIndex:indexPath.row] valueForKey:@"description"];
+    id descriptionContent = [photoDescription valueForKey:@"_content"];
+    
+    if (![photoTitle isEqualToString:@""])
+    {
+        cell.textLabel.text = photoTitle;
+        cell.detailTextLabel.text = descriptionContent;
+    } else if (![descriptionContent isEqualToString:@""])
+    {
+        cell.textLabel.text = descriptionContent;
+        cell.detailTextLabel.text = @"";
+    } else
+    {
+        cell.textLabel.text = @"Unknown";
+        cell.detailTextLabel.text = @"";
+    }
     
     return cell;
 }
-*/
+
 
 /*
 // Override to support conditional editing of the table view.
@@ -85,14 +125,21 @@
 }
 */
 
-/*
+
 #pragma mark - Navigation
 
 // In a storyboard-based application, you will often want to do a little preparation before navigation
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
+    if ([segue.identifier isEqualToString:@"showPicture"])
+    {
+        ImageViewController *ivc = [segue destinationViewController];
+        NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
+        UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+        ivc.imageURL = [FlickrFetcher URLforPhoto:[self.photoList objectAtIndex: indexPath.row] format:FlickrPhotoFormatOriginal];
+        //NSLog(@"%@", ivc.imageURL);
+        ivc.title = cell.textLabel.text;
+    }
 }
-*/
+
 
 @end

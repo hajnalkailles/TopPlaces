@@ -1,5 +1,5 @@
 //
-//  ViewController.h
+//  RecentViewsTableViewController.h
 //  TopPlaces
 //
 //  Created by Hegyi Hajnalka on 21/12/15.
@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ViewController : UIViewController
+@interface RecentViewsTableViewController : UITableViewController
 
 
 @end

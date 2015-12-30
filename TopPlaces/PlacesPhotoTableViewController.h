@@ -10,4 +10,6 @@
 
 @interface PlacesPhotoTableViewController : UITableViewController
 
+@property (nonatomic) id placesId;
+
 @end

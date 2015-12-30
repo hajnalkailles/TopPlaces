@@ -9,10 +9,14 @@
 /* Begin PBXBuildFile section */
 		AADF4C371C285196000E3CDF /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = AADF4C361C285196000E3CDF /* main.m */; };
 		AADF4C3A1C285196000E3CDF /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = AADF4C391C285196000E3CDF /* AppDelegate.m */; };
-		AADF4C3D1C285196000E3CDF /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AADF4C3C1C285196000E3CDF /* ViewController.m */; };
+		AADF4C3D1C285196000E3CDF /* RecentViewsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AADF4C3C1C285196000E3CDF /* RecentViewsTableViewController.m */; };
 		AADF4C401C285196000E3CDF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AADF4C3E1C285196000E3CDF /* Main.storyboard */; };
 		AADF4C421C285196000E3CDF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AADF4C411C285196000E3CDF /* Assets.xcassets */; };
 		AADF4C451C285196000E3CDF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AADF4C431C285196000E3CDF /* LaunchScreen.storyboard */; };
+		AADF4C501C2853C2000E3CDF /* FlickrFetcher.m in Sources */ = {isa = PBXBuildFile; fileRef = AADF4C4F1C2853C2000E3CDF /* FlickrFetcher.m */; };
+		AADF4C551C285871000E3CDF /* TopPlacesTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AADF4C541C285871000E3CDF /* TopPlacesTableViewController.m */; };
+		AADF4C581C3188A7000E3CDF /* PlacesPhotoTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AADF4C571C3188A7000E3CDF /* PlacesPhotoTableViewController.m */; };
+		AADF4C5B1C33D92F000E3CDF /* ImageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AADF4C5A1C33D92F000E3CDF /* ImageViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,12 +24,21 @@
 		AADF4C361C285196000E3CDF /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		AADF4C381C285196000E3CDF /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		AADF4C391C285196000E3CDF /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		AADF4C3B1C285196000E3CDF /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
-		AADF4C3C1C285196000E3CDF /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		AADF4C3B1C285196000E3CDF /* RecentViewsTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RecentViewsTableViewController.h; sourceTree = "<group>"; };
+		AADF4C3C1C285196000E3CDF /* RecentViewsTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RecentViewsTableViewController.m; sourceTree = "<group>"; };
 		AADF4C3F1C285196000E3CDF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		AADF4C411C285196000E3CDF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AADF4C441C285196000E3CDF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		AADF4C461C285196000E3CDF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AADF4C4D1C2853C2000E3CDF /* FlickrAPIKey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlickrAPIKey.h; sourceTree = "<group>"; };
+		AADF4C4E1C2853C2000E3CDF /* FlickrFetcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlickrFetcher.h; sourceTree = "<group>"; };
+		AADF4C4F1C2853C2000E3CDF /* FlickrFetcher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlickrFetcher.m; sourceTree = "<group>"; };
+		AADF4C531C285871000E3CDF /* TopPlacesTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TopPlacesTableViewController.h; sourceTree = "<group>"; };
+		AADF4C541C285871000E3CDF /* TopPlacesTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TopPlacesTableViewController.m; sourceTree = "<group>"; };
+		AADF4C561C3188A7000E3CDF /* PlacesPhotoTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlacesPhotoTableViewController.h; sourceTree = "<group>"; };
+		AADF4C571C3188A7000E3CDF /* PlacesPhotoTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlacesPhotoTableViewController.m; sourceTree = "<group>"; };
+		AADF4C591C33D92F000E3CDF /* ImageViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageViewController.h; sourceTree = "<group>"; };
+		AADF4C5A1C33D92F000E3CDF /* ImageViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,12 +71,19 @@
 		AADF4C341C285196000E3CDF /* TopPlaces */ = {
 			isa = PBXGroup;
 			children = (
-				AADF4C3B1C285196000E3CDF /* ViewController.h */,
-				AADF4C3C1C285196000E3CDF /* ViewController.m */,
+				AADF4C531C285871000E3CDF /* TopPlacesTableViewController.h */,
+				AADF4C541C285871000E3CDF /* TopPlacesTableViewController.m */,
+				AADF4C561C3188A7000E3CDF /* PlacesPhotoTableViewController.h */,
+				AADF4C571C3188A7000E3CDF /* PlacesPhotoTableViewController.m */,
+				AADF4C591C33D92F000E3CDF /* ImageViewController.h */,
+				AADF4C5A1C33D92F000E3CDF /* ImageViewController.m */,
+				AADF4C3B1C285196000E3CDF /* RecentViewsTableViewController.h */,
+				AADF4C3C1C285196000E3CDF /* RecentViewsTableViewController.m */,
 				AADF4C3E1C285196000E3CDF /* Main.storyboard */,
 				AADF4C411C285196000E3CDF /* Assets.xcassets */,
 				AADF4C431C285196000E3CDF /* LaunchScreen.storyboard */,
 				AADF4C461C285196000E3CDF /* Info.plist */,
+				AADF4C4C1C285343000E3CDF /* Model */,
 				AADF4C351C285196000E3CDF /* Supporting Files */,
 			);
 			path = TopPlaces;
@@ -77,6 +97,16 @@
 				AADF4C361C285196000E3CDF /* main.m */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		AADF4C4C1C285343000E3CDF /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				AADF4C4D1C2853C2000E3CDF /* FlickrAPIKey.h */,
+				AADF4C4E1C2853C2000E3CDF /* FlickrFetcher.h */,
+				AADF4C4F1C2853C2000E3CDF /* FlickrFetcher.m */,
+			);
+			name = Model;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -149,8 +179,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AADF4C3D1C285196000E3CDF /* ViewController.m in Sources */,
+				AADF4C551C285871000E3CDF /* TopPlacesTableViewController.m in Sources */,
+				AADF4C3D1C285196000E3CDF /* RecentViewsTableViewController.m in Sources */,
 				AADF4C3A1C285196000E3CDF /* AppDelegate.m in Sources */,
+				AADF4C501C2853C2000E3CDF /* FlickrFetcher.m in Sources */,
+				AADF4C581C3188A7000E3CDF /* PlacesPhotoTableViewController.m in Sources */,
+				AADF4C5B1C33D92F000E3CDF /* ImageViewController.m in Sources */,
 				AADF4C371C285196000E3CDF /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -7,49 +7,129 @@
 //
 
 #import "TopPlacesTableViewController.h"
+#import "PlacesPhotoTableViewController.h"
+#import "FlickrFetcher.h"
 
 @interface TopPlacesTableViewController ()
+
+@property (nonatomic, strong) NSArray *countryList;
+@property (nonatomic, strong) NSArray *placesList;
+@property (nonatomic, strong) NSDictionary *placesNameForId;
 
 @end
 
 @implementation TopPlacesTableViewController
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    
-    // Uncomment the following line to preserve selection between presentations.
-    // self.clearsSelectionOnViewWillAppear = NO;
-    
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
+- (NSArray *)placesList
+{
+    if (!_placesList)
+    {
+        _placesList = [[NSArray alloc] init];
+    }
+    return _placesList;
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+- (NSArray *)countryList
+{
+    if (!_countryList)
+    {
+        _countryList = [[NSArray alloc] init];
+    }
+    return _countryList;
 }
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self fetchPlaces];
+}
+
+- (void)fetchPlaces
+{
+    NSURL *url = [FlickrFetcher URLforTopPlaces];
+    NSData *jsonResults = [NSData dataWithContentsOfURL:url];
+    NSDictionary *propertyListResults = [NSJSONSerialization JSONObjectWithData:jsonResults
+                                                                        options:0
+                                                                          error:NULL];
+    
+    NSDictionary *detailedPlaces = [propertyListResults valueForKeyPath:FLICKR_RESULTS_PLACES];
+    NSArray *places = [detailedPlaces valueForKeyPath:FLICKR_PLACE_NAME];
+    
+    NSArray *placeIds = [detailedPlaces valueForKeyPath:FLICKR_PLACE_ID];
+    
+    NSMutableDictionary *placeIdForPlaceName = [[NSMutableDictionary alloc] init];
+    int index = 0;
+    for (NSString *placeName in places)
+    {
+        [placeIdForPlaceName setObject:[placeIds objectAtIndex:index] forKey:placeName];
+        index++;
+        //NSLog(@"%@", placeName);
+    }
+    self.placesNameForId = placeIdForPlaceName;
+    
+    NSMutableDictionary *countryList = [[NSMutableDictionary alloc] init];
+    for (NSString *placeName in places) {
+        NSArray *placeComponentsArray = [placeName componentsSeparatedByString: @", "];
+
+        NSString *str = [[NSString alloc] initWithString:placeName];
+        str = [str stringByReplacingOccurrencesOfString: [NSString stringWithFormat:@", %@",[placeComponentsArray lastObject]]
+                                             withString:@""];
+        
+        NSMutableString *insertedString = [[NSMutableString alloc] initWithString:str];
+        if ([countryList objectForKey:[placeComponentsArray lastObject]] != nil) {
+            insertedString = [[NSMutableString alloc] initWithString:[countryList objectForKey: [placeComponentsArray lastObject]]];
+        
+            [insertedString appendString:[NSString stringWithFormat:@" + %@", str]];
+        }
+        [countryList setObject: insertedString forKey: [placeComponentsArray lastObject]];
+    }
+    
+    NSMutableArray *countryListArray = [[NSMutableArray alloc] init];
+    NSMutableArray *placesListArray = [[NSMutableArray alloc] init];
+    for (id key in countryList)
+    {
+        NSArray *placesArray = [[countryList objectForKey:key] componentsSeparatedByString: @" + "];
+        placesArray = [placesArray sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+        [placesListArray addObject:placesArray];
+        [countryListArray addObject:key];
+    }
+    //NSLog(@"%@", placesListArray);
+    //NSLog(@"%@", countryListArray);
+    self.placesList = placesListArray;
+    self.countryList = countryListArray;
+}
+
 
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-#warning Incomplete implementation, return the number of sections
-    return 0;
+    return [self.placesList count];
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-#warning Incomplete implementation, return the number of rows
-    return 0;
+    return [[self.placesList objectAtIndex:section] count];
 }
 
-/*
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:<#@"reuseIdentifier"#> forIndexPath:indexPath];
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"PlaceCell" forIndexPath:indexPath];
     
-    // Configure the cell...
+    NSString *cellText = [[self.placesList objectAtIndex: indexPath.section] objectAtIndex:indexPath.row];
+    NSArray *placesArray = [cellText componentsSeparatedByString: @", "];
+    
+    NSString *str = [[NSString alloc] initWithString:cellText];
+    str = [str stringByReplacingOccurrencesOfString: [NSString stringWithFormat:@"%@, ",[placesArray firstObject]]
+                                         withString:@""];
+    
+    cell.textLabel.text = [placesArray firstObject];
+    cell.detailTextLabel.text = str;
     
     return cell;
 }
-*/
+
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+{
+    return [self.countryList objectAtIndex: section];
+}
 
 /*
 // Override to support conditional editing of the table view.
@@ -85,14 +165,22 @@
 }
 */
 
-/*
+
 #pragma mark - Navigation
 
 // In a storyboard-based application, you will often want to do a little preparation before navigation
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
+    if ([segue.identifier isEqualToString:@"selectPlace"])
+    {
+        PlacesPhotoTableViewController *placesPhotoController = [segue destinationViewController];
+        NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
+        UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+        NSString *placeName = [NSString stringWithFormat: @"%@, %@, %@", cell.textLabel.text, cell.detailTextLabel.text, [self.countryList objectAtIndex:indexPath.section]];
+        
+        //NSLog(@"%@", placeName);
+        
+        placesPhotoController.placesId = [self.placesNameForId valueForKey:placeName];
+    }
 }
-*/
 
 @end
