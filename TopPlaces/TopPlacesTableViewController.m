@@ -46,55 +46,75 @@
 - (void)fetchPlaces
 {
     NSURL *url = [FlickrFetcher URLforTopPlaces];
-    NSData *jsonResults = [NSData dataWithContentsOfURL:url];
-    NSDictionary *propertyListResults = [NSJSONSerialization JSONObjectWithData:jsonResults
-                                                                        options:0
-                                                                          error:NULL];
-    
-    NSDictionary *detailedPlaces = [propertyListResults valueForKeyPath:FLICKR_RESULTS_PLACES];
-    NSArray *places = [detailedPlaces valueForKeyPath:FLICKR_PLACE_NAME];
-    
-    NSArray *placeIds = [detailedPlaces valueForKeyPath:FLICKR_PLACE_ID];
-    
-    NSMutableDictionary *placeIdForPlaceName = [[NSMutableDictionary alloc] init];
-    int index = 0;
-    for (NSString *placeName in places)
-    {
-        [placeIdForPlaceName setObject:[placeIds objectAtIndex:index] forKey:placeName];
-        index++;
-    }
-    self.placesNameForId = placeIdForPlaceName;
-    
-    NSMutableDictionary *countryList = [[NSMutableDictionary alloc] init];
-    for (NSString *placeName in places) {
-        NSArray *placeComponentsArray = [placeName componentsSeparatedByString: @", "];
+    [self startFetchingPlaces:url];
+}
 
-        NSString *str = [[NSString alloc] initWithString:placeName];
-        str = [str stringByReplacingOccurrencesOfString: [NSString stringWithFormat:@", %@",[placeComponentsArray lastObject]]
-                                             withString:@""];
-        
-        NSMutableString *insertedString = [[NSMutableString alloc] initWithString:str];
-        if ([countryList objectForKey:[placeComponentsArray lastObject]] != nil) {
-            insertedString = [[NSMutableString alloc] initWithString:[countryList objectForKey: [placeComponentsArray lastObject]]];
-        
-            [insertedString appendString:[NSString stringWithFormat:@" + %@", str]];
-        }
-        [countryList setObject: insertedString forKey: [placeComponentsArray lastObject]];
+-(void) startFetchingPlaces:(NSURL *)fetchURL
+{
+    self.placesList = nil;
+    self.countryList = nil;
+    if (fetchURL) {
+        NSURLRequest *request = [NSURLRequest requestWithURL:fetchURL];
+        NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+        NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration];
+        NSURLSessionDownloadTask *task = [session downloadTaskWithRequest:request
+            completionHandler:^(NSURL *localfile, NSURLResponse *response, NSError *error){
+                if (!error){
+                    if ([request.URL isEqual:fetchURL]) {
+                        NSData *jsonResults = [NSData dataWithContentsOfURL: localfile];
+                        NSDictionary *propertyListResults = [NSJSONSerialization JSONObjectWithData:jsonResults
+                                                                                            options:0
+                                                                                              error:NULL];
+                        
+                        NSDictionary *detailedPlaces = [propertyListResults valueForKeyPath:FLICKR_RESULTS_PLACES];
+                        NSArray *places = [detailedPlaces valueForKeyPath:FLICKR_PLACE_NAME];
+                        
+                        NSArray *placeIds = [detailedPlaces valueForKeyPath:FLICKR_PLACE_ID];
+                        
+                        NSMutableDictionary *placeIdForPlaceName = [[NSMutableDictionary alloc] init];
+                        int index = 0;
+                        for (NSString *placeName in places)
+                        {
+                            [placeIdForPlaceName setObject:[placeIds objectAtIndex:index] forKey:placeName];
+                            index++;
+                        }
+                        self.placesNameForId = placeIdForPlaceName;
+                        
+                        NSMutableDictionary *countryList = [[NSMutableDictionary alloc] init];
+                        for (NSString *placeName in places) {
+                            NSArray *placeComponentsArray = [placeName componentsSeparatedByString: @", "];
+                            
+                            NSString *str = [[NSString alloc] initWithString:placeName];
+                            str = [str stringByReplacingOccurrencesOfString: [NSString stringWithFormat:@", %@",[placeComponentsArray lastObject]]
+                                                                 withString:@""];
+                            
+                            NSMutableString *insertedString = [[NSMutableString alloc] initWithString:str];
+                            if ([countryList objectForKey:[placeComponentsArray lastObject]] != nil) {
+                                insertedString = [[NSMutableString alloc] initWithString:[countryList objectForKey: [placeComponentsArray lastObject]]];
+                                
+                                [insertedString appendString:[NSString stringWithFormat:@" + %@", str]];
+                            }
+                            [countryList setObject: insertedString forKey: [placeComponentsArray lastObject]];
+                        }
+                        
+                        NSMutableArray *countryListArray = [[NSMutableArray alloc] init];
+                        NSMutableArray *placesListArray = [[NSMutableArray alloc] init];
+                        for (id key in countryList)
+                        {
+                            NSArray *placesArray = [[countryList objectForKey:key] componentsSeparatedByString: @" + "];
+                            placesArray = [placesArray sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+                            [placesListArray addObject:placesArray];
+                            [countryListArray addObject:key];
+                        }
+                        self.placesList = placesListArray;
+                        self.countryList = countryListArray;
+                        
+                        dispatch_async(dispatch_get_main_queue(), ^{[self.tableView reloadData];});
+                    }
+                }
+            }];
+        [task resume];
     }
-    
-    NSMutableArray *countryListArray = [[NSMutableArray alloc] init];
-    NSMutableArray *placesListArray = [[NSMutableArray alloc] init];
-    for (id key in countryList)
-    {
-        NSArray *placesArray = [[countryList objectForKey:key] componentsSeparatedByString: @" + "];
-        placesArray = [placesArray sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
-        [placesListArray addObject:placesArray];
-        [countryListArray addObject:key];
-    }
-    //NSLog(@"%@", placesListArray);
-    //NSLog(@"%@", countryListArray);
-    self.placesList = placesListArray;
-    self.countryList = countryListArray;
 }
 
 

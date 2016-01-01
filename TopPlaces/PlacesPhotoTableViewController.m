@@ -34,25 +34,43 @@
 
 - (void) fetchPhotosInPlaces {
     //NSLog(@"%@", self.placesId);
-    
     NSURL *url = [FlickrFetcher URLforPhotosInPlace:self.placesId maxResults:50];
-    NSData *jsonResults = [NSData dataWithContentsOfURL: url];
-    NSDictionary *photosInPlace = [NSJSONSerialization JSONObjectWithData:jsonResults
-                                                                  options:0
-                                                                    error:NULL];
-    
-    NSMutableArray *photos = [photosInPlace valueForKeyPath:@"photos.photo"];
-    NSMutableArray *photosToKeep = [[NSMutableArray alloc] init];
-    for (id photo in photos)
-    {
-        NSURL *photoUrl = [FlickrFetcher URLforPhoto:photo format:FlickrPhotoFormatOriginal];
-        if (photoUrl)
-        {
-            [photosToKeep addObject:photo];
-        }
+    [self startFetchingImages:url];
+}
+
+-(void) startFetchingImages:(NSURL *)fetchURL
+{
+    self.photoList = nil;
+    if (fetchURL) {
+        NSURLRequest *request = [NSURLRequest requestWithURL:fetchURL];
+        NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+        NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration];
+        NSURLSessionDownloadTask *task = [session downloadTaskWithRequest:request
+            completionHandler:^(NSURL *localfile, NSURLResponse *response, NSError *error){
+                if (!error){
+                    if ([request.URL isEqual:fetchURL]) {
+                        NSData *jsonResults = [NSData dataWithContentsOfURL: localfile];
+                        NSDictionary *photosInPlace = [NSJSONSerialization JSONObjectWithData:jsonResults
+                                                                                      options:0
+                                                                                        error:NULL];
+                        
+                        NSMutableArray *photos = [photosInPlace valueForKeyPath:@"photos.photo"];
+                        NSMutableArray *photosToKeep = [[NSMutableArray alloc] init];
+                        for (id photo in photos)
+                        {
+                            NSURL *photoUrl = [FlickrFetcher URLforPhoto:photo format:FlickrPhotoFormatOriginal];
+                            if (photoUrl)
+                            {
+                                [photosToKeep addObject:photo];
+                            }
+                        }
+                        self.photoList = photosToKeep;
+                        dispatch_async(dispatch_get_main_queue(), ^{[self.tableView reloadData];});
+                    }
+                }
+            }];
+        [task resume];
     }
-    
-    self.photoList = photosToKeep;
 }
 
 #pragma mark - Table view data source

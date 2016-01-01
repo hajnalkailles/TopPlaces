@@ -23,7 +23,7 @@
             </objects>
             <point key="canvasLocation" x="-489" y="255"/>
         </scene>
-        <!--Top Places Table View Controller-->
+        <!--Top Places-->
         <scene sceneID="oJl-33-Gyf">
             <objects>
                 <tableViewController id="nPj-Bf-D02" customClass="TopPlacesTableViewController" sceneMemberID="viewController">
@@ -65,7 +65,7 @@
                             <outlet property="delegate" destination="nPj-Bf-D02" id="9aq-QI-QfU"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" id="gob-bY-Leo"/>
+                    <navigationItem key="navigationItem" title="Top Places" id="gob-bY-Leo"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="gG9-NP-z7f" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
