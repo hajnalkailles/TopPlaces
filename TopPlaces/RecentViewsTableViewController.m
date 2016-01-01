@@ -7,40 +7,56 @@
 //
 
 #import "RecentViewsTableViewController.h"
+#import "ImageViewController.h"
+#import "UserDefaultsSaver.h"
 
 @interface RecentViewsTableViewController ()
+
+@property (nonatomic, strong) NSArray *recentImages;
 
 @end
 
 @implementation RecentViewsTableViewController
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    
+- (NSArray *)recentImages
+{
+    if (!_recentImages)
+    {
+        _recentImages = [[NSArray alloc] init];
+    }
+    return _recentImages;
 }
 
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.recentImages = [UserDefaultsSaver getRecentImages];
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:YES];
+    self.recentImages = [UserDefaultsSaver getRecentImages];
+    [self.tableView reloadData];
+}
 
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-#warning Incomplete implementation, return the number of sections
-    return 0;
+    return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-#warning Incomplete implementation, return the number of rows
-    return 0;
+    return [self.recentImages count];
 }
 
-/*
+
  - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
- UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:<#@"reuseIdentifier"#> forIndexPath:indexPath];
+     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"recentPicture" forIndexPath:indexPath];
+     cell.textLabel.text = [NSString stringWithFormat:@"%@", [self.recentImages objectAtIndex:indexPath.row]];
  
- // Configure the cell...
- 
- return cell;
+     return cell;
  }
- */
+
 
 /*
  // Override to support conditional editing of the table view.
@@ -76,14 +92,19 @@
  }
  */
 
-/*
+
  #pragma mark - Navigation
- 
- // In a storyboard-based application, you will often want to do a little preparation before navigation
+
  - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
- // Get the new view controller using [segue destinationViewController].
- // Pass the selected object to the new view controller.
+     if ([segue.identifier isEqualToString:@"showPicture"])
+     {
+         ImageViewController *ivc = [segue destinationViewController];
+         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
+         UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+         ivc.imageURL = [self.recentImages objectAtIndex:indexPath.row];
+         ivc.title = cell.textLabel.text;
+     }
  }
- */
+
 
 @end

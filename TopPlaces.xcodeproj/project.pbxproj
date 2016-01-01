@@ -17,6 +17,7 @@
 		AADF4C551C285871000E3CDF /* TopPlacesTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AADF4C541C285871000E3CDF /* TopPlacesTableViewController.m */; };
 		AADF4C581C3188A7000E3CDF /* PlacesPhotoTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AADF4C571C3188A7000E3CDF /* PlacesPhotoTableViewController.m */; };
 		AADF4C5B1C33D92F000E3CDF /* ImageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AADF4C5A1C33D92F000E3CDF /* ImageViewController.m */; };
+		AADF4C611C371DEC000E3CDF /* UserDefaultsSaver.m in Sources */ = {isa = PBXBuildFile; fileRef = AADF4C601C371DEC000E3CDF /* UserDefaultsSaver.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,6 +40,8 @@
 		AADF4C571C3188A7000E3CDF /* PlacesPhotoTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PlacesPhotoTableViewController.m; sourceTree = "<group>"; };
 		AADF4C591C33D92F000E3CDF /* ImageViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageViewController.h; sourceTree = "<group>"; };
 		AADF4C5A1C33D92F000E3CDF /* ImageViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImageViewController.m; sourceTree = "<group>"; };
+		AADF4C5F1C371DEC000E3CDF /* UserDefaultsSaver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UserDefaultsSaver.h; path = Model/UserDefaultsSaver.h; sourceTree = "<group>"; };
+		AADF4C601C371DEC000E3CDF /* UserDefaultsSaver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = UserDefaultsSaver.m; path = Model/UserDefaultsSaver.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,6 +108,8 @@
 				AADF4C4D1C2853C2000E3CDF /* FlickrAPIKey.h */,
 				AADF4C4E1C2853C2000E3CDF /* FlickrFetcher.h */,
 				AADF4C4F1C2853C2000E3CDF /* FlickrFetcher.m */,
+				AADF4C5F1C371DEC000E3CDF /* UserDefaultsSaver.h */,
+				AADF4C601C371DEC000E3CDF /* UserDefaultsSaver.m */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -185,6 +190,7 @@
 				AADF4C501C2853C2000E3CDF /* FlickrFetcher.m in Sources */,
 				AADF4C581C3188A7000E3CDF /* PlacesPhotoTableViewController.m in Sources */,
 				AADF4C5B1C33D92F000E3CDF /* ImageViewController.m in Sources */,
+				AADF4C611C371DEC000E3CDF /* UserDefaultsSaver.m in Sources */,
 				AADF4C371C285196000E3CDF /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
