@@ -10,7 +10,7 @@
 
 @interface UserDefaultsSaver : NSObject
 
-+ (void)addNewImageURL:(NSURL *)imageURL;
++ (void)addNewImage:(NSDictionary *)imageDictionary;
 + (NSArray *)getRecentImages;
 
 @end

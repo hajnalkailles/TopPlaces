@@ -10,12 +10,10 @@
 #import "UserDefaultsSaver.h"
 
 @interface ImageViewController () <UIScrollViewDelegate>
-
 @property (nonatomic, strong) UIImageView *imageView;
 @property (nonatomic, strong) UIImage *image;
 @property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
 @property (weak, nonatomic) IBOutlet UIActivityIndicatorView *spinner;
-
 @end
 
 @implementation ImageViewController
@@ -37,7 +35,6 @@
 -(void)setImageURL:(NSURL *)imageURL
 {
     _imageURL = imageURL;
-    //self.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:self.imageURL]];
     [self startDownloadingImage];
 }
 
@@ -55,7 +52,6 @@
                     if ([request.URL isEqual:self.imageURL]) {
                         UIImage *image = [UIImage imageWithData:[NSData dataWithContentsOfURL:localfile]];
                         dispatch_async(dispatch_get_main_queue(), ^{self.image = image;});
-                        //[self performSelectorOnMainThread:@selector(setImage:) withObject:image waitUntilDone:NO];
                     }
                 }
             }];
@@ -80,10 +76,11 @@
 
 -(void) setImage:(UIImage *)image
 {
+    self.scrollView.zoomScale = 1.0;
     self.imageView.image = image;
-    [self.imageView sizeToFit];
+    self.imageView.frame = CGRectMake(0, 0, image.size.width, image.size.height);
     self.scrollView.contentSize = self.image ? self.image.size : CGSizeZero;
-    [UserDefaultsSaver addNewImageURL:self.imageURL];
+    [UserDefaultsSaver addNewImage:self.photoDictionary];
     [self.spinner stopAnimating];
 }
 
@@ -91,6 +88,9 @@
 {
     [super viewDidLoad];
     [self.scrollView addSubview:self.imageView];
+    self.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
+    self.navigationItem.leftItemsSupplementBackButton = YES;
+    self.title = @"No image selected";
 }
 
 @end

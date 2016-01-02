@@ -10,6 +10,5 @@
 
 @interface RecentViewsTableViewController : UITableViewController
 
-
 @end
 

@@ -9,11 +9,10 @@
 #import "RecentViewsTableViewController.h"
 #import "ImageViewController.h"
 #import "UserDefaultsSaver.h"
+#import "FlickrFetcher.h"
 
 @interface RecentViewsTableViewController ()
-
 @property (nonatomic, strong) NSArray *recentImages;
-
 @end
 
 @implementation RecentViewsTableViewController
@@ -27,7 +26,8 @@
     return _recentImages;
 }
 
-- (void)viewDidLoad {
+- (void)viewDidLoad
+{
     [super viewDidLoad];
     self.recentImages = [UserDefaultsSaver getRecentImages];
 }
@@ -41,70 +41,74 @@
 
 #pragma mark - Table view data source
 
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
     return 1;
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
     return [self.recentImages count];
 }
 
-
- - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"recentPicture" forIndexPath:indexPath];
-     cell.textLabel.text = [NSString stringWithFormat:@"%@", [self.recentImages objectAtIndex:indexPath.row]];
+ - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"recentPicture" forIndexPath:indexPath];
+    
+    NSString *photoTitle = [[self.recentImages objectAtIndex:indexPath.row] valueForKey: FLICKR_PHOTO_TITLE];
+    id photoDescription = [[self.recentImages objectAtIndex:indexPath.row] valueForKey:@"description"];
+    id descriptionContent = [photoDescription valueForKey:@"_content"];
+    
+    if (![photoTitle isEqualToString:@""])
+    {
+        cell.textLabel.text = photoTitle;
+    } else if (![descriptionContent isEqualToString:@""])
+    {
+        cell.textLabel.text = descriptionContent;
+    } else
+    {
+        cell.textLabel.text = @"Unknown";
+    }
  
-     return cell;
+    return cell;
  }
 
+#pragma mark - UITableViewDelegate
 
-/*
- // Override to support conditional editing of the table view.
- - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
- // Return NO if you do not want the specified item to be editable.
- return YES;
- }
- */
+- (void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(nonnull NSIndexPath *)indexPath
+{
+    id detail = self.splitViewController.viewControllers[1];
+    if ([detail isKindOfClass:[UINavigationController class]])
+    {
+        detail = [detail topViewController];
+        if ([detail isKindOfClass:[ImageViewController class]])
+        {
+            [self prepareImageViewController:detail toDisplayPhoto:[FlickrFetcher URLforPhoto:[self.recentImages objectAtIndex: indexPath.row] format:FlickrPhotoFormatOriginal] atIndexPath:indexPath];
+        }
+    }
+}
 
-/*
- // Override to support editing the table view.
- - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
- if (editingStyle == UITableViewCellEditingStyleDelete) {
- // Delete the row from the data source
- [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
- } else if (editingStyle == UITableViewCellEditingStyleInsert) {
- // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
- }
- }
- */
+#pragma mark - Navigation
 
-/*
- // Override to support rearranging the table view.
- - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
- }
- */
+- (void)prepareImageViewController:(ImageViewController *)ivc toDisplayPhoto:(NSURL *)photo atIndexPath:(NSIndexPath *)indexPath
+{
+    ivc.photoDictionary = [self.recentImages objectAtIndex:indexPath.row];
+    ivc.imageURL = photo;
+    UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+    ivc.title = cell.textLabel.text;
+}
 
-/*
- // Override to support conditional rearranging of the table view.
- - (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
- // Return NO if you do not want the item to be re-orderable.
- return YES;
- }
- */
-
-
- #pragma mark - Navigation
-
- - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+ - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
      if ([segue.identifier isEqualToString:@"showPicture"])
      {
          ImageViewController *ivc = [segue destinationViewController];
          NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
          UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
-         ivc.imageURL = [self.recentImages objectAtIndex:indexPath.row];
+         ivc.photoDictionary = [self.recentImages objectAtIndex: indexPath.row];
+         ivc.imageURL = [FlickrFetcher URLforPhoto:[self.recentImages objectAtIndex: indexPath.row] format:FlickrPhotoFormatOriginal];
          ivc.title = cell.textLabel.text;
      }
  }
-
 
 @end

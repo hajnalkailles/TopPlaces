@@ -56,7 +56,7 @@
                                     </subviews>
                                 </tableViewCellContentView>
                                 <connections>
-                                    <segue destination="fjG-Op-efq" kind="show" identifier="selectPlace" id="C7w-oc-bXd"/>
+                                    <segue destination="fjG-Op-efq" kind="show" identifier="selectPlace" id="8D9-0k-kTL"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>
@@ -113,10 +113,11 @@
                             <outlet property="delegate" destination="fjG-Op-efq" id="gQO-XE-3hc"/>
                         </connections>
                     </tableView>
+                    <navigationItem key="navigationItem" id="cNz-eM-vNu"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="pyL-2x-7Ea" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1758" y="18"/>
+            <point key="canvasLocation" x="1714" y="18"/>
         </scene>
         <!--Image View Controller-->
         <scene sceneID="uQ2-GW-1yq">
@@ -155,9 +156,9 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="KUu-7H-2nG" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2439" y="18"/>
+            <point key="canvasLocation" x="2415" y="778"/>
         </scene>
-        <!--Recent Views Table View Controller-->
+        <!--Recent Images-->
         <scene sceneID="U0H-GD-0j2">
             <objects>
                 <tableViewController id="LNf-85-93Z" customClass="RecentViewsTableViewController" sceneMemberID="viewController">
@@ -192,7 +193,7 @@
                             <outlet property="delegate" destination="LNf-85-93Z" id="Dj7-Ij-32G"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" id="g8j-Bu-2eM"/>
+                    <navigationItem key="navigationItem" title="Recent Images" id="g8j-Bu-2eM"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="CjN-Pe-ApF" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
@@ -238,6 +239,6 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="6pN-IK-9Uu"/>
+        <segue reference="7Zp-e5-7KW"/>
     </inferredMetricsTieBreakers>
 </document>

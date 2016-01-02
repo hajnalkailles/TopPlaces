@@ -11,9 +11,7 @@
 #import "FlickrFetcher.h"
 
 @interface PlacesPhotoTableViewController ()
-
 @property (nonatomic, strong) NSArray *photoList;
-
 @end
 
 @implementation PlacesPhotoTableViewController
@@ -27,13 +25,14 @@
     return _photoList;
 }
 
-- (void)viewDidLoad {
+- (void)viewDidLoad
+{
     [super viewDidLoad];
     [self fetchPhotosInPlaces];
 }
 
-- (void) fetchPhotosInPlaces {
-    //NSLog(@"%@", self.placesId);
+- (void) fetchPhotosInPlaces
+{
     NSURL *url = [FlickrFetcher URLforPhotosInPlace:self.placesId maxResults:50];
     [self startFetchingImages:url];
 }
@@ -50,9 +49,7 @@
                 if (!error){
                     if ([request.URL isEqual:fetchURL]) {
                         NSData *jsonResults = [NSData dataWithContentsOfURL: localfile];
-                        NSDictionary *photosInPlace = [NSJSONSerialization JSONObjectWithData:jsonResults
-                                                                                      options:0
-                                                                                        error:NULL];
+                        NSDictionary *photosInPlace = [NSJSONSerialization JSONObjectWithData:jsonResults options:0 error:NULL];
                         
                         NSMutableArray *photos = [photosInPlace valueForKeyPath:@"photos.photo"];
                         NSMutableArray *photosToKeep = [[NSMutableArray alloc] init];
@@ -75,16 +72,18 @@
 
 #pragma mark - Table view data source
 
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
     return 1;
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
     return [self.photoList count];
 }
 
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"photoDescription" forIndexPath:indexPath];
     
     NSString *photoTitle = [[self.photoList objectAtIndex:indexPath.row] valueForKey: FLICKR_PHOTO_TITLE];
@@ -108,43 +107,30 @@
     return cell;
 }
 
+#pragma mark - UITableViewDelegate
 
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
+- (void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(nonnull NSIndexPath *)indexPath
+{
+    id detail = self.splitViewController.viewControllers[1];
+    if ([detail isKindOfClass:[UINavigationController class]])
+    {
+        detail = [detail topViewController];
+        if ([detail isKindOfClass:[ImageViewController class]])
+        {
+            [self prepareImageViewController:detail toDisplayPhoto:[self.photoList objectAtIndex:indexPath.row] atIndexPath:indexPath];
+        }
+    }
 }
-*/
-
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
-}
-*/
-
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
-
 
 #pragma mark - Navigation
+
+- (void)prepareImageViewController:(ImageViewController *)ivc toDisplayPhoto:(id )photo atIndexPath:(NSIndexPath *)indexPath
+{
+    ivc.photoDictionary = [self.photoList objectAtIndex:indexPath.row];
+    ivc.imageURL = [FlickrFetcher URLforPhoto:photo format:FlickrPhotoFormatOriginal];
+    UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+    ivc.title = cell.textLabel.text;
+}
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"showPicture"])
@@ -152,10 +138,10 @@
         ImageViewController *ivc = [segue destinationViewController];
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
         UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+        ivc.photoDictionary = [self.photoList objectAtIndex: indexPath.row];
         ivc.imageURL = [FlickrFetcher URLforPhoto:[self.photoList objectAtIndex: indexPath.row] format:FlickrPhotoFormatOriginal];
         ivc.title = cell.textLabel.text;
     }
 }
-
 
 @end

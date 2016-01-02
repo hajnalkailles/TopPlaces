@@ -8,26 +8,16 @@
 
 #import "TopPlacesTableViewController.h"
 #import "PlacesPhotoTableViewController.h"
+#import "ImageViewController.h"
 #import "FlickrFetcher.h"
 
 @interface TopPlacesTableViewController ()
-
 @property (nonatomic, strong) NSArray *countryList;
-@property (nonatomic, strong) NSArray *placesList;
-@property (nonatomic, strong) NSDictionary *placesNameForId;
-
+@property (nonatomic, strong) NSArray *placeList;
+@property (nonatomic, strong) NSDictionary *placesNameDictionary;
 @end
 
 @implementation TopPlacesTableViewController
-
-- (NSArray *)placesList
-{
-    if (!_placesList)
-    {
-        _placesList = [[NSArray alloc] init];
-    }
-    return _placesList;
-}
 
 - (NSArray *)countryList
 {
@@ -38,7 +28,17 @@
     return _countryList;
 }
 
-- (void)viewDidLoad {
+- (NSArray *)placeList
+{
+    if (!_placeList)
+    {
+        _placeList = [[NSArray alloc] init];
+    }
+    return _placeList;
+}
+
+- (void)viewDidLoad
+{
     [super viewDidLoad];
     [self fetchPlaces];
 }
@@ -51,8 +51,8 @@
 
 -(void) startFetchingPlaces:(NSURL *)fetchURL
 {
-    self.placesList = nil;
     self.countryList = nil;
+    self.placeList = nil;
     if (fetchURL) {
         NSURLRequest *request = [NSURLRequest requestWithURL:fetchURL];
         NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
@@ -62,37 +62,35 @@
                 if (!error){
                     if ([request.URL isEqual:fetchURL]) {
                         NSData *jsonResults = [NSData dataWithContentsOfURL: localfile];
-                        NSDictionary *propertyListResults = [NSJSONSerialization JSONObjectWithData:jsonResults
-                                                                                            options:0
-                                                                                              error:NULL];
+                        NSDictionary *propertyListResults = [NSJSONSerialization JSONObjectWithData:jsonResults options:0 error:NULL];
                         
                         NSDictionary *detailedPlaces = [propertyListResults valueForKeyPath:FLICKR_RESULTS_PLACES];
                         NSArray *places = [detailedPlaces valueForKeyPath:FLICKR_PLACE_NAME];
                         
                         NSArray *placeIds = [detailedPlaces valueForKeyPath:FLICKR_PLACE_ID];
                         
-                        NSMutableDictionary *placeIdForPlaceName = [[NSMutableDictionary alloc] init];
+                        NSMutableDictionary *placeIdsByPlaceName = [[NSMutableDictionary alloc] init];
                         int index = 0;
                         for (NSString *placeName in places)
                         {
-                            [placeIdForPlaceName setObject:[placeIds objectAtIndex:index] forKey:placeName];
+                            [placeIdsByPlaceName setObject:[placeIds objectAtIndex:index] forKey:placeName];
                             index++;
                         }
-                        self.placesNameForId = placeIdForPlaceName;
+                        self.placesNameDictionary = placeIdsByPlaceName;
                         
                         NSMutableDictionary *countryList = [[NSMutableDictionary alloc] init];
                         for (NSString *placeName in places) {
                             NSArray *placeComponentsArray = [placeName componentsSeparatedByString: @", "];
                             
-                            NSString *str = [[NSString alloc] initWithString:placeName];
-                            str = [str stringByReplacingOccurrencesOfString: [NSString stringWithFormat:@", %@",[placeComponentsArray lastObject]]
+                            NSString *placeString = [[NSString alloc] initWithString:placeName];
+                            placeString = [placeString stringByReplacingOccurrencesOfString: [NSString stringWithFormat:@", %@",[placeComponentsArray lastObject]]
                                                                  withString:@""];
                             
-                            NSMutableString *insertedString = [[NSMutableString alloc] initWithString:str];
+                            NSMutableString *insertedString = [[NSMutableString alloc] initWithString:placeString];
                             if ([countryList objectForKey:[placeComponentsArray lastObject]] != nil) {
                                 insertedString = [[NSMutableString alloc] initWithString:[countryList objectForKey: [placeComponentsArray lastObject]]];
                                 
-                                [insertedString appendString:[NSString stringWithFormat:@" + %@", str]];
+                                [insertedString appendString:[NSString stringWithFormat:@" + %@", placeString]];
                             }
                             [countryList setObject: insertedString forKey: [placeComponentsArray lastObject]];
                         }
@@ -106,7 +104,7 @@
                             [placesListArray addObject:placesArray];
                             [countryListArray addObject:key];
                         }
-                        self.placesList = placesListArray;
+                        self.placeList = placesListArray;
                         self.countryList = countryListArray;
                         
                         dispatch_async(dispatch_get_main_queue(), ^{[self.tableView reloadData];});
@@ -117,30 +115,31 @@
     }
 }
 
-
 #pragma mark - Table view data source
 
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return [self.placesList count];
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return [self.placeList count];
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return [[self.placesList objectAtIndex:section] count];
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return [[self.placeList objectAtIndex:section] count];
 }
 
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"PlaceCell" forIndexPath:indexPath];
     
-    NSString *cellText = [[self.placesList objectAtIndex: indexPath.section] objectAtIndex:indexPath.row];
-    NSArray *placesArray = [cellText componentsSeparatedByString: @", "];
+    NSString *placeName = [[self.placeList objectAtIndex: indexPath.section] objectAtIndex:indexPath.row];
+    NSArray *placesArray = [placeName componentsSeparatedByString: @", "];
     
-    NSString *str = [[NSString alloc] initWithString:cellText];
-    str = [str stringByReplacingOccurrencesOfString: [NSString stringWithFormat:@"%@, ",[placesArray firstObject]]
+    NSString *placeString = [[NSString alloc] initWithString:placeName];
+    placeString = [placeString stringByReplacingOccurrencesOfString: [NSString stringWithFormat:@"%@, ",[placesArray firstObject]]
                                          withString:@""];
     
     cell.textLabel.text = [placesArray firstObject];
-    cell.detailTextLabel.text = str;
+    cell.detailTextLabel.text = placeString;
     
     return cell;
 }
@@ -150,52 +149,17 @@
     return [self.countryList objectAtIndex: section];
 }
 
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
-}
-*/
-
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    } else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
-}
-*/
-
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath {
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath {
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
-
-
 #pragma mark - Navigation
 
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
     if ([segue.identifier isEqualToString:@"selectPlace"])
     {
         PlacesPhotoTableViewController *placesPhotoController = [segue destinationViewController];
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
         UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
         NSString *placeName = [NSString stringWithFormat: @"%@, %@, %@", cell.textLabel.text, cell.detailTextLabel.text, [self.countryList objectAtIndex:indexPath.section]];
-        
-        placesPhotoController.placesId = [self.placesNameForId valueForKey:placeName];
+        placesPhotoController.placesId = [self.placesNameDictionary valueForKey:placeName];
     }
 }
 

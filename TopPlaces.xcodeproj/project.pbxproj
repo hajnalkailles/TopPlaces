@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AAB4CD5A1C38059400A7EC0C /* MainIpad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAB4CD591C38059400A7EC0C /* MainIpad.storyboard */; };
 		AADF4C371C285196000E3CDF /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = AADF4C361C285196000E3CDF /* main.m */; };
 		AADF4C3A1C285196000E3CDF /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = AADF4C391C285196000E3CDF /* AppDelegate.m */; };
 		AADF4C3D1C285196000E3CDF /* RecentViewsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AADF4C3C1C285196000E3CDF /* RecentViewsTableViewController.m */; };
@@ -21,6 +22,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		AAB4CD591C38059400A7EC0C /* MainIpad.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = MainIpad.storyboard; sourceTree = "<group>"; };
 		AADF4C321C285196000E3CDF /* TopPlaces.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TopPlaces.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AADF4C361C285196000E3CDF /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		AADF4C381C285196000E3CDF /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -83,6 +85,7 @@
 				AADF4C3B1C285196000E3CDF /* RecentViewsTableViewController.h */,
 				AADF4C3C1C285196000E3CDF /* RecentViewsTableViewController.m */,
 				AADF4C3E1C285196000E3CDF /* Main.storyboard */,
+				AAB4CD591C38059400A7EC0C /* MainIpad.storyboard */,
 				AADF4C411C285196000E3CDF /* Assets.xcassets */,
 				AADF4C431C285196000E3CDF /* LaunchScreen.storyboard */,
 				AADF4C461C285196000E3CDF /* Info.plist */,
@@ -172,6 +175,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AADF4C451C285196000E3CDF /* LaunchScreen.storyboard in Resources */,
+				AAB4CD5A1C38059400A7EC0C /* MainIpad.storyboard in Resources */,
 				AADF4C421C285196000E3CDF /* Assets.xcassets in Resources */,
 				AADF4C401C285196000E3CDF /* Main.storyboard in Resources */,
 			);
@@ -342,6 +346,7 @@
 				AADF4C4B1C285196000E3CDF /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

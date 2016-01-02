@@ -7,20 +7,21 @@
 //
 
 #import "UserDefaultsSaver.h"
+#import "FlickrFetcher.h"
 
 @implementation UserDefaultsSaver
 
-+ (void)addNewImageURL:(NSURL *)imageURL
++ (void)addNewImage:(NSDictionary *)imageDictionary
 {
     NSMutableArray *imagesArray = [[NSMutableArray alloc] init];
     if ([[NSUserDefaults standardUserDefaults] objectForKey:@"recentPictures"])
     {
         [imagesArray addObjectsFromArray:[[NSUserDefaults standardUserDefaults] objectForKey:@"recentPictures"]];
-        for (NSString *imageDictURL in imagesArray)
+        for (NSDictionary *imageDict in imagesArray)
         {
-            if ([imageDictURL isEqualToString:[NSString stringWithFormat:@"%@", imageURL]])
+            if ([imageDict isEqual:imageDictionary])
             {
-                [imagesArray removeObject:imageDictURL];
+                [imagesArray removeObject:imageDict];
                 break;
             }
         }
@@ -28,12 +29,12 @@
         {
             [imagesArray removeObject:[imagesArray lastObject]];
         }
-        [imagesArray insertObject:[NSString stringWithFormat:@"%@", imageURL] atIndex:0];
+        [imagesArray insertObject:imageDictionary atIndex:0];
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"recentPictures"];
     } else
     {
-        [imagesArray addObject: [NSString stringWithFormat:@"%@", imageURL]];
+        [imagesArray addObject: imageDictionary];
     }
-    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"recentPictures"];
     [[NSUserDefaults standardUserDefaults] setObject:imagesArray forKey:@"recentPictures"];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
@@ -43,12 +44,7 @@
     NSMutableArray *recentImages = [[NSMutableArray alloc] init];
     if ([[NSUserDefaults standardUserDefaults] objectForKey:@"recentPictures"])
     {
-        NSArray *recentImagesString = [[NSUserDefaults standardUserDefaults] objectForKey:@"recentPictures"];
-        for (NSString *imageString in recentImagesString)
-        {
-            NSURL *url = [[NSURL alloc] initWithString:imageString];
-            [recentImages addObject:url];
-        }
+        recentImages = [[NSUserDefaults standardUserDefaults] objectForKey:@"recentPictures"];
     }
     return recentImages;
 }
