@@ -40,7 +40,7 @@
                                     sortDescriptorWithKey:@"name"
                                     ascending:YES
                                     selector:@selector(localizedCaseInsensitiveCompare:)]];
-    request.fetchLimit = 5;
+    request.fetchLimit = 50;
     
     self.fetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:request
                                                                         managedObjectContext:context

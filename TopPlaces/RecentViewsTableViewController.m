@@ -37,7 +37,7 @@
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:YES];
-    [self setContext:self.context];
+    //[self setContext:self.context];
     [self.tableView reloadData];
 }
 
