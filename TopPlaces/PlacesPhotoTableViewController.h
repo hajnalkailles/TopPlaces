@@ -6,10 +6,9 @@
 //  Copyright © 2015 Hegyi Hajnalka. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import "CoreDataTableViewController.h"
 
-@interface PlacesPhotoTableViewController : UITableViewController
-
-@property (nonatomic) id placesId;
-
+@interface PlacesPhotoTableViewController : CoreDataTableViewController
+@property (nonatomic) NSString *regionName;
+@property (nonatomic, strong) NSManagedObjectContext *context;
 @end

@@ -6,8 +6,8 @@
 //  Copyright © 2015 Hegyi Hajnalka. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import "CoreDataTableViewController.h"
 
-@interface TopPlacesTableViewController : UITableViewController
+@interface TopPlacesTableViewController : CoreDataTableViewController
 
 @end

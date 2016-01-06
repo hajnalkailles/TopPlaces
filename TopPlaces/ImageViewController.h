@@ -9,8 +9,6 @@
 #import <UIKit/UIKit.h>
 
 @interface ImageViewController : UIViewController
-
 @property (nonatomic, strong) NSURL *imageURL;
-@property (nonatomic, strong) NSDictionary *photoDictionary;
-
+@property (nonatomic, strong) NSManagedObjectContext *context;
 @end

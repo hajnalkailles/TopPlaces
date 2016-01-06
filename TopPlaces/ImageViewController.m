@@ -7,7 +7,7 @@
 //
 
 #import "ImageViewController.h"
-#import "UserDefaultsSaver.h"
+#import "Photo+Flickr.h"
 
 @interface ImageViewController () <UIScrollViewDelegate>
 @property (nonatomic, strong) UIImageView *imageView;
@@ -80,7 +80,9 @@
     self.imageView.image = image;
     self.imageView.frame = CGRectMake(0, 0, image.size.width, image.size.height);
     self.scrollView.contentSize = self.image ? self.image.size : CGSizeZero;
-    [UserDefaultsSaver addNewImage:self.photoDictionary];
+    
+    [Photo addDateToPhotoWithURL: [NSString stringWithFormat:@"%@",self.imageURL] inManagedObjectContext:self.context];
+    
     [self.spinner stopAnimating];
 }
 
@@ -90,7 +92,6 @@
     [self.scrollView addSubview:self.imageView];
     self.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
     self.navigationItem.leftItemsSupplementBackButton = YES;
-    self.title = @"No image selected";
 }
 
 @end

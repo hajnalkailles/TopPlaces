@@ -6,147 +6,58 @@
 //  Copyright © 2015 Hegyi Hajnalka. All rights reserved.
 //
 
+#import "MyDocumentHandler.h"
+#import "Region.h"
+#import "PhotoDatabaseAvailability.h"
 #import "TopPlacesTableViewController.h"
 #import "PlacesPhotoTableViewController.h"
-#import "ImageViewController.h"
-#import "FlickrFetcher.h"
 
 @interface TopPlacesTableViewController ()
-@property (nonatomic, strong) NSArray *countryList;
-@property (nonatomic, strong) NSArray *placeList;
-@property (nonatomic, strong) NSDictionary *placesNameDictionary;
+@property (nonatomic, strong) NSManagedObjectContext *context;
 @end
 
 @implementation TopPlacesTableViewController
 
-- (NSArray *)countryList
+- (void)awakeFromNib
 {
-    if (!_countryList)
-    {
-        _countryList = [[NSArray alloc] init];
-    }
-    return _countryList;
+    [[NSNotificationCenter defaultCenter] addObserverForName:PhotoDatabaseAvailabilityNotification
+                                                      object:nil
+                                                       queue:nil
+                                                  usingBlock:^(NSNotification *note) {
+                                                      self.context = note.userInfo[PhotoDatabaseAvailabilityContext];
+                                                  }];
 }
 
-- (NSArray *)placeList
+- (void)setContext:(NSManagedObjectContext *)context
 {
-    if (!_placeList)
-    {
-        _placeList = [[NSArray alloc] init];
-    }
-    return _placeList;
-}
-
-- (void)viewDidLoad
-{
-    [super viewDidLoad];
-    [self fetchPlaces];
-}
-
-- (void)fetchPlaces
-{
-    NSURL *url = [FlickrFetcher URLforTopPlaces];
-    [self startFetchingPlaces:url];
-}
-
--(void) startFetchingPlaces:(NSURL *)fetchURL
-{
-    self.countryList = nil;
-    self.placeList = nil;
-    if (fetchURL) {
-        NSURLRequest *request = [NSURLRequest requestWithURL:fetchURL];
-        NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
-        NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration];
-        NSURLSessionDownloadTask *task = [session downloadTaskWithRequest:request
-            completionHandler:^(NSURL *localfile, NSURLResponse *response, NSError *error){
-                if (!error){
-                    if ([request.URL isEqual:fetchURL]) {
-                        NSData *jsonResults = [NSData dataWithContentsOfURL: localfile];
-                        NSDictionary *propertyListResults = [NSJSONSerialization JSONObjectWithData:jsonResults options:0 error:NULL];
-                        
-                        NSDictionary *detailedPlaces = [propertyListResults valueForKeyPath:FLICKR_RESULTS_PLACES];
-                        NSArray *places = [detailedPlaces valueForKeyPath:FLICKR_PLACE_NAME];
-                        
-                        NSArray *placeIds = [detailedPlaces valueForKeyPath:FLICKR_PLACE_ID];
-                        
-                        NSMutableDictionary *placeIdsByPlaceName = [[NSMutableDictionary alloc] init];
-                        int index = 0;
-                        for (NSString *placeName in places)
-                        {
-                            [placeIdsByPlaceName setObject:[placeIds objectAtIndex:index] forKey:placeName];
-                            index++;
-                        }
-                        self.placesNameDictionary = placeIdsByPlaceName;
-                        
-                        NSMutableDictionary *countryList = [[NSMutableDictionary alloc] init];
-                        for (NSString *placeName in places) {
-                            NSArray *placeComponentsArray = [placeName componentsSeparatedByString: @", "];
-                            
-                            NSString *placeString = [[NSString alloc] initWithString:placeName];
-                            placeString = [placeString stringByReplacingOccurrencesOfString: [NSString stringWithFormat:@", %@",[placeComponentsArray lastObject]]
-                                                                 withString:@""];
-                            
-                            NSMutableString *insertedString = [[NSMutableString alloc] initWithString:placeString];
-                            if ([countryList objectForKey:[placeComponentsArray lastObject]] != nil) {
-                                insertedString = [[NSMutableString alloc] initWithString:[countryList objectForKey: [placeComponentsArray lastObject]]];
-                                
-                                [insertedString appendString:[NSString stringWithFormat:@" + %@", placeString]];
-                            }
-                            [countryList setObject: insertedString forKey: [placeComponentsArray lastObject]];
-                        }
-                        
-                        NSMutableArray *countryListArray = [[NSMutableArray alloc] init];
-                        NSMutableArray *placesListArray = [[NSMutableArray alloc] init];
-                        for (id key in countryList)
-                        {
-                            NSArray *placesArray = [[countryList objectForKey:key] componentsSeparatedByString: @" + "];
-                            placesArray = [placesArray sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
-                            [placesListArray addObject:placesArray];
-                            [countryListArray addObject:key];
-                        }
-                        self.placeList = placesListArray;
-                        self.countryList = countryListArray;
-                        
-                        dispatch_async(dispatch_get_main_queue(), ^{[self.tableView reloadData];});
-                    }
-                }
-            }];
-        [task resume];
-    }
-}
-
-#pragma mark - Table view data source
-
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
-{
-    return [self.placeList count];
-}
-
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
-    return [[self.placeList objectAtIndex:section] count];
+    _context = context;
+    
+    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Region"];
+    request.predicate = nil;
+    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"photographerCount"
+                                                              ascending:NO
+                                 ],[NSSortDescriptor
+                                    sortDescriptorWithKey:@"name"
+                                    ascending:YES
+                                    selector:@selector(localizedCaseInsensitiveCompare:)]];
+    request.fetchLimit = 5;
+    
+    self.fetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:request
+                                                                        managedObjectContext:context
+                                                                          sectionNameKeyPath:nil
+                                                                                   cacheName:nil];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"PlaceCell" forIndexPath:indexPath];
+    UITableViewCell *cell = [self.tableView dequeueReusableCellWithIdentifier:@"PlaceCell"];
     
-    NSString *placeName = [[self.placeList objectAtIndex: indexPath.section] objectAtIndex:indexPath.row];
-    NSArray *placesArray = [placeName componentsSeparatedByString: @", "];
+    Region *region = [self.fetchedResultsController objectAtIndexPath:indexPath];
     
-    NSString *placeString = [[NSString alloc] initWithString:placeName];
-    placeString = [placeString stringByReplacingOccurrencesOfString: [NSString stringWithFormat:@"%@, ",[placesArray firstObject]]
-                                         withString:@""];
-    
-    cell.textLabel.text = [placesArray firstObject];
-    cell.detailTextLabel.text = placeString;
+    cell.textLabel.text = region.name;
+    cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ photographer(s) with %@ photo(s)", region.photographerCount, region.photoCount];
     
     return cell;
-}
-
-- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
-{
-    return [self.countryList objectAtIndex: section];
 }
 
 #pragma mark - Navigation
@@ -158,8 +69,8 @@
         PlacesPhotoTableViewController *placesPhotoController = [segue destinationViewController];
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
         UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
-        NSString *placeName = [NSString stringWithFormat: @"%@, %@, %@", cell.textLabel.text, cell.detailTextLabel.text, [self.countryList objectAtIndex:indexPath.section]];
-        placesPhotoController.placesId = [self.placesNameDictionary valueForKey:placeName];
+        placesPhotoController.regionName = cell.textLabel.text;
+        placesPhotoController.context = self.context;
     }
 }
 

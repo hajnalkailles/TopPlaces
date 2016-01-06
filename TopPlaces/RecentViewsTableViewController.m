@@ -8,70 +8,107 @@
 
 #import "RecentViewsTableViewController.h"
 #import "ImageViewController.h"
-#import "UserDefaultsSaver.h"
 #import "FlickrFetcher.h"
+#import "PhotoDatabaseAvailability.h"
+#import "Photo.h"
 
 @interface RecentViewsTableViewController ()
-@property (nonatomic, strong) NSArray *recentImages;
+@property (nonatomic, strong) NSManagedObjectContext *context;
 @end
 
 @implementation RecentViewsTableViewController
 
-- (NSArray *)recentImages
+- (void)awakeFromNib
 {
-    if (!_recentImages)
-    {
-        _recentImages = [[NSArray alloc] init];
-    }
-    return _recentImages;
+    [[NSNotificationCenter defaultCenter] addObserverForName:PhotoDatabaseAvailabilityNotification
+                                                      object:nil
+                                                       queue:nil
+                                                  usingBlock:^(NSNotification *note) {
+                                                      self.context = note.userInfo[PhotoDatabaseAvailabilityContext];
+                                                  }];
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.recentImages = [UserDefaultsSaver getRecentImages];
+    [self setContext:self.context];
 }
 
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:YES];
-    self.recentImages = [UserDefaultsSaver getRecentImages];
+    [self setContext:self.context];
     [self.tableView reloadData];
 }
 
-#pragma mark - Table view data source
-
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+- (void)setContext:(NSManagedObjectContext *)context
 {
-    return 1;
-}
-
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
-    return [self.recentImages count];
-}
-
- - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"recentPicture" forIndexPath:indexPath];
+    _context = context;
     
-    NSString *photoTitle = [[self.recentImages objectAtIndex:indexPath.row] valueForKey: FLICKR_PHOTO_TITLE];
-    id photoDescription = [[self.recentImages objectAtIndex:indexPath.row] valueForKey:@"description"];
-    id descriptionContent = [photoDescription valueForKey:@"_content"];
+    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Photo"];
+    request.predicate = [NSPredicate predicateWithFormat:@"didView = YES"];
+    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"viewDate"
+                                                              ascending:NO
+                                 ]];
+    request.fetchLimit = 20;
+    
+    self.fetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:request
+                                                                        managedObjectContext:context
+                                                                          sectionNameKeyPath:nil
+                                                                                   cacheName:nil];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    UITableViewCell *cell = [self.tableView dequeueReusableCellWithIdentifier:@"recentPicture"];
+    
+    Photo *photo = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    
+    NSString *photoTitle = photo.title;
+    id photoDescription = photo.subtitle;
     
     if (![photoTitle isEqualToString:@""])
     {
         cell.textLabel.text = photoTitle;
-    } else if (![descriptionContent isEqualToString:@""])
+        cell.detailTextLabel.text = photoDescription;
+    } else if (![photoDescription isEqualToString:@""])
     {
-        cell.textLabel.text = descriptionContent;
+        cell.textLabel.text = photoDescription;
+        cell.detailTextLabel.text = @"";
     } else
     {
         cell.textLabel.text = @"Unknown";
+        cell.detailTextLabel.text = @"";
     }
- 
+    
+    if (!photo.thumbnailImage)
+    {
+        NSURL *fetchURL = [NSURL URLWithString:photo.photoURL];
+        
+        if (fetchURL) {
+            NSURLRequest *request = [NSURLRequest requestWithURL:fetchURL];
+            NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+            NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration];
+            NSURLSessionDownloadTask *task = [session downloadTaskWithRequest:request
+                                                            completionHandler:^(NSURL *localfile, NSURLResponse *response, NSError *error){
+                                                                if (!error){
+                                                                    NSData *jsonResults = [NSData dataWithContentsOfURL: localfile];
+                                                                    UIImage *thumbnailImage = [UIImage imageWithData:jsonResults];
+                                                                    photo.thumbnailImage = jsonResults;
+                                                                    
+                                                                    dispatch_async(dispatch_get_main_queue(), ^{cell.imageView.image = thumbnailImage;});
+                                                                }
+                                                            }];
+            [task resume];
+        }
+    } else
+    {
+        cell.imageView.image = [UIImage imageWithData:photo.thumbnailImage];
+    }
+
+    
     return cell;
- }
+}
 
 #pragma mark - UITableViewDelegate
 
@@ -83,19 +120,22 @@
         detail = [detail topViewController];
         if ([detail isKindOfClass:[ImageViewController class]])
         {
-            [self prepareImageViewController:detail toDisplayPhoto:[FlickrFetcher URLforPhoto:[self.recentImages objectAtIndex: indexPath.row] format:FlickrPhotoFormatOriginal] atIndexPath:indexPath];
+            Photo *photo = [self.fetchedResultsController objectAtIndexPath:indexPath];
+            [self prepareImageViewController:detail toDisplayPhoto:photo atIndexPath:indexPath];
         }
     }
 }
 
 #pragma mark - Navigation
 
-- (void)prepareImageViewController:(ImageViewController *)ivc toDisplayPhoto:(NSURL *)photo atIndexPath:(NSIndexPath *)indexPath
+- (void)prepareImageViewController:(ImageViewController *)ivc toDisplayPhoto:(id)photo atIndexPath:(NSIndexPath *)indexPath
 {
-    ivc.photoDictionary = [self.recentImages objectAtIndex:indexPath.row];
-    ivc.imageURL = photo;
+    Photo *newPhoto = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    
+    ivc.imageURL = [NSURL URLWithString: newPhoto.photoURL];
     UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
     ivc.title = cell.textLabel.text;
+    ivc.context = self.context;
 }
 
  - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
@@ -105,9 +145,10 @@
          ImageViewController *ivc = [segue destinationViewController];
          NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
          UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
-         ivc.photoDictionary = [self.recentImages objectAtIndex: indexPath.row];
-         ivc.imageURL = [FlickrFetcher URLforPhoto:[self.recentImages objectAtIndex: indexPath.row] format:FlickrPhotoFormatOriginal];
+         Photo *photo = [self.fetchedResultsController objectAtIndexPath:indexPath];
+         ivc.imageURL = [NSURL URLWithString:photo.photoURL];
          ivc.title = cell.textLabel.text;
+         ivc.context = self.context;
      }
  }
 

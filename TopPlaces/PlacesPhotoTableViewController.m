@@ -8,100 +8,84 @@
 
 #import "PlacesPhotoTableViewController.h"
 #import "ImageViewController.h"
+#import "Photo.h"
 #import "FlickrFetcher.h"
 
-@interface PlacesPhotoTableViewController ()
-@property (nonatomic, strong) NSArray *photoList;
-@end
-
 @implementation PlacesPhotoTableViewController
-
-- (NSArray *) photoList
-{
-    if (!_photoList)
-    {
-        _photoList = [[NSArray alloc] init];
-    }
-    return _photoList;
-}
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    [self fetchPhotosInPlaces];
+    [self setContext:self.context];
 }
 
-- (void) fetchPhotosInPlaces
+- (void)viewDidAppear:(BOOL)animated
 {
-    NSURL *url = [FlickrFetcher URLforPhotosInPlace:self.placesId maxResults:50];
-    [self startFetchingImages:url];
+    [self.tableView reloadData];
 }
 
--(void) startFetchingImages:(NSURL *)fetchURL
+- (void)setContext:(NSManagedObjectContext *)context
 {
-    self.photoList = nil;
-    if (fetchURL) {
-        NSURLRequest *request = [NSURLRequest requestWithURL:fetchURL];
-        NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
-        NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration];
-        NSURLSessionDownloadTask *task = [session downloadTaskWithRequest:request
-            completionHandler:^(NSURL *localfile, NSURLResponse *response, NSError *error){
-                if (!error){
-                    if ([request.URL isEqual:fetchURL]) {
-                        NSData *jsonResults = [NSData dataWithContentsOfURL: localfile];
-                        NSDictionary *photosInPlace = [NSJSONSerialization JSONObjectWithData:jsonResults options:0 error:NULL];
-                        
-                        NSMutableArray *photos = [photosInPlace valueForKeyPath:@"photos.photo"];
-                        NSMutableArray *photosToKeep = [[NSMutableArray alloc] init];
-                        for (id photo in photos)
-                        {
-                            NSURL *photoUrl = [FlickrFetcher URLforPhoto:photo format:FlickrPhotoFormatOriginal];
-                            if (photoUrl)
-                            {
-                                [photosToKeep addObject:photo];
-                            }
-                        }
-                        self.photoList = photosToKeep;
-                        dispatch_async(dispatch_get_main_queue(), ^{[self.tableView reloadData];});
-                    }
-                }
-            }];
-        [task resume];
-    }
-}
-
-#pragma mark - Table view data source
-
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
-{
-    return 1;
-}
-
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
-    return [self.photoList count];
+    _context = context;
+    
+    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Photo"];
+    request.predicate = [NSPredicate predicateWithFormat:@"placeTaken.name LIKE %@", self.regionName];
+    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"title"
+                                                              ascending:YES
+                                                               selector:@selector(localizedStandardCompare:)]];
+    
+    self.fetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:request
+                                                                        managedObjectContext:context
+                                                                          sectionNameKeyPath:nil
+                                                                                   cacheName:nil];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"photoDescription" forIndexPath:indexPath];
+    UITableViewCell *cell = [self.tableView dequeueReusableCellWithIdentifier:@"photoDescription"];
     
-    NSString *photoTitle = [[self.photoList objectAtIndex:indexPath.row] valueForKey: FLICKR_PHOTO_TITLE];
-    id photoDescription = [[self.photoList objectAtIndex:indexPath.row] valueForKey:@"description"];
-    id descriptionContent = [photoDescription valueForKey:@"_content"];
+    Photo *photo = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    
+    NSString *photoTitle = photo.title;
+    id photoDescription = photo.subtitle;
     
     if (![photoTitle isEqualToString:@""])
     {
         cell.textLabel.text = photoTitle;
-        cell.detailTextLabel.text = descriptionContent;
-    } else if (![descriptionContent isEqualToString:@""])
+        cell.detailTextLabel.text = photoDescription;
+    } else if (![photoDescription isEqualToString:@""])
     {
-        cell.textLabel.text = descriptionContent;
+        cell.textLabel.text = photoDescription;
         cell.detailTextLabel.text = @"";
     } else
     {
         cell.textLabel.text = @"Unknown";
         cell.detailTextLabel.text = @"";
+    }
+    
+    if (!photo.thumbnailImage)
+    {
+        NSURL *fetchURL = [NSURL URLWithString:photo.photoURL];
+        
+        if (fetchURL) {
+            NSURLRequest *request = [NSURLRequest requestWithURL:fetchURL];
+            NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+            NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration];
+            NSURLSessionDownloadTask *task = [session downloadTaskWithRequest:request
+                completionHandler:^(NSURL *localfile, NSURLResponse *response, NSError *error){
+                    if (!error){
+                        NSData *jsonResults = [NSData dataWithContentsOfURL: localfile];
+                        UIImage *thumbnailImage = [UIImage imageWithData:jsonResults];
+                        photo.thumbnailImage = jsonResults;
+                        
+                        dispatch_async(dispatch_get_main_queue(), ^{cell.imageView.image = thumbnailImage;});
+                                                                    }
+                                                            }];
+            [task resume];
+        }
+    } else
+    {
+        cell.imageView.image = [UIImage imageWithData:photo.thumbnailImage];
     }
     
     return cell;
@@ -117,7 +101,8 @@
         detail = [detail topViewController];
         if ([detail isKindOfClass:[ImageViewController class]])
         {
-            [self prepareImageViewController:detail toDisplayPhoto:[self.photoList objectAtIndex:indexPath.row] atIndexPath:indexPath];
+            Photo *photo = [self.fetchedResultsController objectAtIndexPath:indexPath];
+            [self prepareImageViewController:detail toDisplayPhoto:photo atIndexPath:indexPath];
         }
     }
 }
@@ -126,10 +111,12 @@
 
 - (void)prepareImageViewController:(ImageViewController *)ivc toDisplayPhoto:(id )photo atIndexPath:(NSIndexPath *)indexPath
 {
-    ivc.photoDictionary = [self.photoList objectAtIndex:indexPath.row];
-    ivc.imageURL = [FlickrFetcher URLforPhoto:photo format:FlickrPhotoFormatOriginal];
+    Photo *newPhoto = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    
+    ivc.imageURL = [NSURL URLWithString: newPhoto.photoURL];
     UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
     ivc.title = cell.textLabel.text;
+    ivc.context = self.context;
 }
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
@@ -138,9 +125,12 @@
         ImageViewController *ivc = [segue destinationViewController];
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
         UITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
-        ivc.photoDictionary = [self.photoList objectAtIndex: indexPath.row];
-        ivc.imageURL = [FlickrFetcher URLforPhoto:[self.photoList objectAtIndex: indexPath.row] format:FlickrPhotoFormatOriginal];
+        
+        Photo *photo = [self.fetchedResultsController objectAtIndexPath:indexPath];
+        
+        ivc.imageURL = [NSURL URLWithString: photo.photoURL];
         ivc.title = cell.textLabel.text;
+        ivc.context = self.context;
     }
 }
 

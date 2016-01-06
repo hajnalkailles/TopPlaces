@@ -133,17 +133,17 @@
             </objects>
             <point key="canvasLocation" x="-489" y="69"/>
         </scene>
-        <!--Top Places-->
+        <!--Top Regions-->
         <scene sceneID="qyI-4T-fJ1">
             <objects>
                 <tableViewController id="Dpp-WP-fDx" customClass="TopPlacesTableViewController" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" rowHeight="44" sectionHeaderHeight="18" sectionFooterHeight="18" id="mb3-18-wyw">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" id="mb3-18-wyw">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" red="0.93725490199999995" green="0.93725490199999995" blue="0.95686274510000002" alpha="1" colorSpace="calibratedRGB"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <prototypes>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="PlaceCell" textLabel="5YY-7R-FUW" detailTextLabel="G5Q-x5-Pio" style="IBUITableViewCellStyleSubtitle" id="b6Q-tW-u45">
-                                <rect key="frame" x="0.0" y="114" width="600" height="44"/>
+                                <rect key="frame" x="0.0" y="92" width="600" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="b6Q-tW-u45" id="Rgu-o0-4hE">
                                     <rect key="frame" x="0.0" y="0.0" width="600" height="43"/>
@@ -175,7 +175,7 @@
                             <outlet property="delegate" destination="Dpp-WP-fDx" id="L5F-8b-nAR"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Top Places" id="DnZ-Q0-D6G"/>
+                    <navigationItem key="navigationItem" title="Top Regions" id="DnZ-Q0-D6G"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="KOH-P4-iJP" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
